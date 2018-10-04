@@ -16,13 +16,13 @@ int main() {
       .version = 1,
       .serializer = serializer,
   };
-  result = iota_api_get_node_info(&service, res);
+  result = iota_api_get_node_info(&service, &res);
   printf("appname: %s\n", res->app_name->data);
   printf("app_version: %s\n", res->app_version->data);
   printf("jre_available_processors: %d\n", res->jre_available_processors);
   printf("neighbors: %d\n", res->neighbors);
   printf("tips: %d\n", res->tips);
-  printf("latest_milestone: %s\n", res->latest_milestone->data);
+  printf("latest_milestone: %s\n", res->latest_milestone->trits);
 
   return 0;
 }
