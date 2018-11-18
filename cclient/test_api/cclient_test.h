@@ -1,3 +1,9 @@
+#include "cclient/service.h"
+#include "cclient/http/http.h"
+#include "utils/containers/hash/hash8019_queue.h"
+#include "cclient/iota_client_core_api.h"
+#include "cclient/iota_client_extended_api.h"
+
 #define RAWTXN                                                                 \
   "NEH99999999999999999999999999999999999999999999999999999999999999999999999" \
   "99999999999999999999999999999999999999999999999999999999999999999999999999" \

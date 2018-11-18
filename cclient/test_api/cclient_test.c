@@ -1,83 +1,102 @@
 #include <stdio.h>
 
-#include "cclient/http/http.h"
-#include "cclient/iota_api.h"
-#include "cclient/serialization/json/json_serializer.h"
 #include "cclient_test.h"
 
-void test_get_node_info(iota_http_service_t* service) {
+void test_get_node_info(iota_client_service_t* service) {
   printf("***************** test_get_node_info *************\n");
-  iota_api_result_t result;
+  retcode_t result = RC_OK;
   get_node_info_res_t* res = get_node_info_res_new();
 
-  result = iota_api_get_node_info(service, &res);
+  result = iota_client_get_node_info(service, res);
   printf("appname: %s\n", res->app_name->data);
   printf("app_version: %s\n", res->app_version->data);
   printf("jre_available_processors: %d\n", res->jre_available_processors);
   printf("neighbors: %d\n", res->neighbors);
   printf("tips: %d\n", res->tips);
-  printf("latest_milestone: %s\n", res->latest_milestone->trits);
+
+  printf("latest_milestone: ");
+  // flex to trytes;
+  size_t len_trytes = 243 / 3;
+  trit_t trytes_out[len_trytes + 1];
+  size_t trits_count =
+      flex_trits_to_trytes(trytes_out, len_trytes, res->latest_milestone,
+                           243, 243);
+  trytes_out[len_trytes] = '\0';
+  if (trits_count != 0) {
+    printf("%s\n", trytes_out);
+  }
 
   get_node_info_res_free(&res);
   printf("************** test_get_node_info_end ************\n\n");
 }
 
-void test_get_txn_to_approve(iota_http_service_t* service,
-                             attach_to_tangle_res_t** res) {
+void test_get_txn_to_approve(iota_client_service_t* service,
+                             get_transactions_to_approve_res_t* res) {
   printf("************* test_get_txn_to_approve ************\n");
-  iota_api_result_t result;
+  retcode_t result = RC_OK;
   get_transactions_to_approve_req_t* req =
       get_transactions_to_approve_req_new();
   req->depth = 15;
 
-  result = iota_api_get_transactions_to_approve(service, req, res);
+  result = iota_client_get_transactions_to_approve(service, req, res);
   get_transactions_to_approve_req_free(&req);
   printf("********* test_get_txn_to_approve_end ************\n\n");
 }
 
-void test_attach_to_tangle(iota_http_service_t* service) {
+void test_attach_to_tangle(iota_client_service_t* service) {
   printf("************* test_attach_to_tangle **************\n");
-  int i = 0;
-  iota_api_result_t result;
+  retcode_t result = RC_OK;
+  flex_trit_t trits_8019[8019];
   attach_to_tangle_req_t* req = attach_to_tangle_req_new();
   attach_to_tangle_res_t* res = attach_to_tangle_res_new();
   get_transactions_to_approve_res_t* res_tb =
       get_transactions_to_approve_res_new();
 
-  test_get_txn_to_approve(service, &res_tb);
+  test_get_txn_to_approve(service, res_tb);
 
-  req->trunk = res_tb->trunk;
-  req->branch = res_tb->branch;
-  attach_to_tangle_req_set_mwm(req, 18);
-  req->trytes = attach_to_tangle_req_add_trytes(req->trytes, RAWTXN);
-
-  result = iota_api_attach_to_tangle(service, req, &res);
-  if (result.error == RC_OK) {
-    for (i = 0; i < attach_to_tangle_res_trytes_cnt(res); i++) {
-      char_buffer_t* t = char_buffer_new();
-      flex_hash_to_char_buffer(get_trytes_res_at(res, i), t);
-      printf("%s\n", t->data);
-      char_buffer_free(t);
+  memcpy(req->trunk, res_tb->trunk, sizeof(req->trunk));
+  memcpy(req->branch, res_tb->branch, sizeof(req->branch));
+  flex_trits_from_trytes(trits_8019, 8019, (const tryte_t*)RAWTXN, 2673, 2673);
+  hash8019_queue_push(&req->trytes, trits_8019);
+  req->mwm = 18;
+  
+  result = iota_client_attach_to_tangle(service, req, res);
+  if (result == RC_OK) {
+    flex_trit_t* ary = hash8019_queue_peek(res->trytes);
+    // flex to trytes;
+    size_t len_trytes = 8019 / 3;
+    trit_t trytes_out[len_trytes + 1];
+    size_t trits_count =
+        flex_trits_to_trytes(trytes_out, len_trytes, ary,
+                             8019, 8019);
+    trytes_out[len_trytes] = '\0';
+    if (trits_count != 0) {
+      printf("%s\n", trytes_out);
     }
   }
-  get_transactions_to_approve_res_free(&res);
-  attach_to_tangle_res_free(res);
+
+  get_transactions_to_approve_res_free(&res_tb);
+  attach_to_tangle_res_free(&res);
   attach_to_tangle_req_free(&req);
   printf("*********** test_attach_to_tangle_end ***********\n\n");
 }
 
 int main() {
-  serializer_t serializer;
-  init_json_serializer(&serializer);
-  iota_http_service_t service = {
+  http_info_t http = {
       .host = "node10.puyuma.org",
       .port = 14266,
-      .content_type = "application/json",
-      .version = 1,
-      .serializer = serializer,
+      .api_version = 1,
   };
+
+  iota_client_service_t service = {
+      .http = http,
+      .serializer_type = SR_JSON,
+  };
+  iota_client_core_init(&service);
   test_get_node_info(&service);
   test_attach_to_tangle(&service);
+
+  iota_client_core_destroy(&service);
   return 0;
 
 }
