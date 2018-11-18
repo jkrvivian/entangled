@@ -4,6 +4,9 @@
 #include "cclient/iota_client_core_api.h"
 #include "cclient/iota_client_extended_api.h"
 
+#define SEED                                                                   \
+  "AMRWQP9BUMJALJHBXUCHOD9HFFD9LGTGEAWMJWWXSDVOF9PI9YGJAPBQLQUOMNYEQCZPGCTHGV" \
+  "NNAPGHA"
 #define RAWTXN                                                                 \
   "NEH99999999999999999999999999999999999999999999999999999999999999999999999" \
   "99999999999999999999999999999999999999999999999999999999999999999999999999" \
