@@ -18,9 +18,8 @@ void test_get_node_info(iota_client_service_t* service) {
   // flex to trytes;
   size_t len_trytes = 243 / 3;
   trit_t trytes_out[len_trytes + 1];
-  size_t trits_count =
-      flex_trits_to_trytes(trytes_out, len_trytes, res->latest_milestone,
-                           243, 243);
+  size_t trits_count = flex_trits_to_trytes(trytes_out, len_trytes,
+                                            res->latest_milestone, 243, 243);
   trytes_out[len_trytes] = '\0';
   if (trits_count != 0) {
     printf("%s\n", trytes_out);
@@ -59,7 +58,7 @@ void test_attach_to_tangle(iota_client_service_t* service) {
   flex_trits_from_trytes(trits_8019, 8019, (const tryte_t*)RAWTXN, 2673, 2673);
   hash8019_queue_push(&req->trytes, trits_8019);
   req->mwm = 18;
-  
+
   result = iota_client_attach_to_tangle(service, req, res);
   if (result == RC_OK) {
     flex_trit_t* ary = hash8019_queue_peek(res->trytes);
@@ -67,8 +66,7 @@ void test_attach_to_tangle(iota_client_service_t* service) {
     size_t len_trytes = 8019 / 3;
     trit_t trytes_out[len_trytes + 1];
     size_t trits_count =
-        flex_trits_to_trytes(trytes_out, len_trytes, ary,
-                             8019, 8019);
+        flex_trits_to_trytes(trytes_out, len_trytes, ary, 8019, 8019);
     trytes_out[len_trytes] = '\0';
     if (trits_count != 0) {
       printf("%s\n", trytes_out);
@@ -97,8 +95,7 @@ void test_get_new_address(iota_client_service_t* service) {
     size_t len_trytes = 243 / 3;
     trit_t trytes_out[len_trytes + 1];
     size_t trits_count =
-        flex_trits_to_trytes(trytes_out, len_trytes, ary,
-                             243, 243);
+        flex_trits_to_trytes(trytes_out, len_trytes, ary, 243, 243);
     trytes_out[len_trytes] = '\0';
     if (trits_count != 0) {
       printf("generate address:\n%s\n\n", trytes_out);
@@ -126,5 +123,4 @@ int main() {
 
   iota_client_core_destroy(&service);
   return 0;
-
 }
