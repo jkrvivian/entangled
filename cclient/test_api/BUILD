@@ -8,6 +8,7 @@ cc_binary(
         "//cclient:api",
         "//cclient/http:shared",
         "//cclient/serialization:serializer_json",
+        "//common/model:transaction",
         "//utils/containers/hash:hash8019_queue",
     ],
 )
