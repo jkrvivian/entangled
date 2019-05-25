@@ -1,7 +1,8 @@
+#include "cclient/api/core/core_api.h"
+#include "cclient/api/extended/extended_api.h"
 #include "cclient/http/http.h"
-#include "cclient/iota_client_core_api.h"
-#include "cclient/iota_client_extended_api.h"
 #include "cclient/service.h"
+#include "common/model/transaction.h"
 #include "utils/containers/hash/hash8019_queue.h"
 
 #define SEED                                                                   \
